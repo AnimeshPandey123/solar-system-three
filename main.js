@@ -8,6 +8,32 @@ let scene, camera, renderer, controls;
 
 window.onload = init;
 
+const objects = [
+  {
+    'x': 25,
+    'y': 0,
+    'distance': 10,
+    'z': -10,
+    'image': 'jupiter.jpeg',
+    'name': 'jupiter',
+    'radius': 3,
+    'rotationTime': 1000,
+    'revolve': true,
+    'isPlanet': true
+  }
+]
+
+const sun = {
+  'x': 0,
+  'y': 0,
+  'z': -10,
+  'image': 'sun.png',
+  'name': 'sun',
+  'radius': 7,
+  'rotationTime': 3000,
+  'revolve': false
+}
+
 // function increase(objectMesh){
 //   console.log('here')
 //   console.log(objectMesh.position.x)
@@ -19,12 +45,12 @@ window.onload = init;
 // }
 
 
-function init(){
- scene = new THREE.Scene();
+function init() {
+  scene = new THREE.Scene();
 
- camera =  new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+  camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
 
- let canvas = document.getElementById('bg')
+  let canvas = document.getElementById('bg')
 
   // canvas.width = innerWidth
   // canvas.height = innerHeight
@@ -33,7 +59,7 @@ function init(){
   // canvas.style.height = innerHeight
 
 
- renderer = new THREE.WebGLRenderer({
+  renderer = new THREE.WebGLRenderer({
     canvas: document.querySelector('#bg')
   });
 
@@ -46,13 +72,13 @@ function init(){
   renderer.render(scene, camera);
 
   const geometry = new THREE.TorusGeometry(10, 3, 16, 100)
-  const material = new THREE.MeshStandardMaterial({color: 0xFF6347})
+  const material = new THREE.MeshStandardMaterial({ color: 0xFF6347 })
   const torus = new THREE.Mesh(geometry, material)
 
   // scene.add(torus);
 
   const pointLight = new THREE.PointLight(0xffffff);
-  pointLight.position.set(5,5,5)
+  pointLight.position.set(5, 5, 5)
 
   const ambientLight = new THREE.AmbientLight(0xffffff)
 
@@ -63,17 +89,18 @@ function init(){
   const gridHelper = new THREE.GridHelper(200, 50)
   scene.add(lightHelper, gridHelper)
 
- controls = new OrbitControls(camera, renderer.domElement)
+  controls = new OrbitControls(camera, renderer.domElement)
 
-  function addStar(){
+  function addStar() {
     const geometry = new THREE.SphereGeometry(0.2, 24, 24)
-    const material = new THREE.MeshStandardMaterial({color: 0xffffff})
+    const material = new THREE.MeshStandardMaterial({ color: 0xffffff })
 
     const star = new THREE.Mesh(geometry, material);
 
-    const [x,y,z] = Array(3).fill().map(() => THREE.MathUtils.randFloatSpread(100))
+    const [x, y, z] = Array(3).fill().map(() => THREE.MathUtils.randFloatSpread(100))
 
-    star.position.set(x,y,z);
+    star.position.set(x, y, z);
+
     scene.add(star);
   }
 
@@ -90,49 +117,27 @@ function init(){
   console.log(ctx)
 
 
-const objects = [
-   {
-    'x': -55,
-    'y': 0,
-    'z': -10,
-    'image': 'sun.png',
-    'name': 'sun',
-    'radius': 10,
-    'rotationTime': 3000,
-    'revolve': false
-  },
-   {
-    'x': 0,
-    'y': 0,
-    'z': -10,
-    'image': 'jupiter.jpeg',
-    'name': 'jupiter',
-    'radius': 4,
-    'rotationTime': 1000,
-    'revolve': true
+  addObjects(sun)
+
+  objects.forEach(addObjects)
+
+  for (let i = 0; i < objectMeshs.length; i++) {
+
+    setInterval(function () {
+      rotate(objectMeshs[i])
+    }, objectMeshs[i].rotationTime)
+
+    // if (objectMeshs[i].revolve) {
+    //   setInterval(function () {
+    //     revolve(objectMeshs[i])
+    //   }, objectMeshs[i].rotationTime)
+
+    // }
   }
-]
-objects.forEach(addObjects)
-
-for(let i = 0; i < objectMeshs.length; i++){
-
-  setInterval(function(){
-    rotate(objectMeshs[i])
-  }, objectMeshs[i].rotationTime) 
-
-  // if(objectMeshs[i].revolve){
-  //   setInterval(function(){
-  //     revolve(objectMeshs[i])
-  //   }, objectMeshs[i].rotationTime) 
-    
-  // }
-}
 
 
 
-
-
-animate();
+  animate();
 
 }
 
@@ -140,41 +145,45 @@ let body = document.getElementsByTagName('body')[0]
 let canvas = document.getElementById('bg');
 let main = document.getElementsByTagName('main')[0]
 
-function revolve(objectMesh){
-    // console.log(document.body)
-    
-    let scrollTop =  main.offsetTop;
-    // console.log(scrollTop)
+function revolve(objectMesh) {
+  // console.log(document.body)
 
-    var x = window.scrollX
-    console.log(x)
+  // let scrollTop =  main.offsetTop;
+  let scrollTop = 1;
 
-    if(scrollTop == 0){
-      objectMesh.position.x = objectMesh.originalX
-      objectMesh.position.y = objectMesh.originalY
-    }else{
-      let length = objectMesh.points.length;
+  let points = objectMesh.points;
 
-      let points = objectMesh.points;
-      
-      let per = scrollTop/innerHeight *100;
+  let length = objectMesh.points.length;
 
-      let pos = Math.ceil(per/100 *length);
+  let pos = 0;
+  // console.log(points)
+  // console.log(objectMesh)
 
-      // console.log(scrollTop, pos, points[pos])
+  for (let i = 0; i < length; i++) {
+    // console.log(points[i])
+    if (points[i].x == objectMesh.position.x && points[i].y == objectMesh.position.y) {
+      pos = i;
 
-      objectMesh.position.x = points[pos].x
-      objectMesh.position.y = points[pos].y
-
-
-
+      if (pos == length) {
+        pos = -1;
+      }
+      break;
     }
+  }
+
+  let requiredPos = pos + 1;
+
+  objectMesh.position.x = points[requiredPos].x;
+  objectMesh.position.y = points[requiredPos].y;
+  // console.log(points[requiredPos])
+  // console.log(requiredPos)
+  // console.log(points)
 }
 
-function rotate(objectMesh){
-    objectMesh.rotation.x +=0.05
-    objectMesh.rotation.y +=0.075
-    objectMesh.rotation.z += 0.05
+function rotate(objectMesh) {
+  objectMesh.rotation.x += 0.05
+  objectMesh.rotation.y += 0.075
+  objectMesh.rotation.z += 0.05
 }
 
 
@@ -194,7 +203,8 @@ function rotate(objectMesh){
 
 let objectMeshs = [];
 
-function addObjects(object){
+function addObjects(object) {
+
   let img = object.image;
   console.log(object)
   const objectTexture = new THREE.TextureLoader().load(img)
@@ -212,34 +222,52 @@ function addObjects(object){
   objectMesh.position.y = object.y;
   objectMesh.position.z = object.z;
   objectMesh.name = object.name
-  objectMesh.rotationTime =object.rotationTime
-  objectMesh.revolve  = object.revolve;
-  objectMesh.radius = object.radius
+  objectMesh.rotationTime = object.rotationTime
+  objectMesh.revolve = object.revolve;
+  objectMesh.radius = object.radius;
 
-  objectMesh.originalX = object.x
-  objectMesh.originalY = object.y
-  objectMesh.originalZ = object.z
+  objectMesh.originalX = objectMesh.position.x
+  objectMesh.originalY = objectMesh.position.y
+  objectMesh.originalZ = objectMesh.position.z
+
+  console.log(objectMesh)
 
 
-  if(objectMesh.revolve){
+  if (objectMesh.revolve) {
 
-    let xRadius = Math.abs(-55 + object.x);
-    let yRadius = 0
+    let xRadius = Math.abs(objectMesh.position.x);
+    // let xRadius = 20;
+    // let yRadius = 0
 
     const curve = new THREE.EllipseCurve(
-      -55,  0,            // ax, aY
-      xRadius, yRadius,           // xRadius, yRadius
-      0,  2 * Math.PI,  // aStartAngle, aEndAngle
+      sun.x, sun.y,            // ax, aY
+      xRadius-5, 10,           // xRadius, yRadius
+      0, 2 * Math.PI,  // aStartAngle, aEndAngle
       false,            // aClockwise
       0                 // aRotation
     );
 
-    const points = curve.getPoints( 50 );
+    const points = curve.getPoints(500);
+
+    const geometryEllipse = new THREE.BufferGeometry().setFromPoints(points);
+
+    const materialEllipse = new THREE.LineBasicMaterial({ color: 0xff0000 });
+
+    // Create the final object to add to the scene
+    const ellipse = new THREE.Line(geometryEllipse, materialEllipse);
+
 
     objectMesh.points = points
+
+    console.log(ellipse)
+
+    scene.add(ellipse)
+
+
   }
 
   console.log(objectMesh)
+
 
   objectMeshs.push(objectMesh)
 
@@ -247,8 +275,8 @@ function addObjects(object){
 }
 
 
-function moveCamera(){
-  const t =  document.body.getBoundingClientRect().top;
+function moveCamera() {
+  const t = document.body.getBoundingClientRect().top;
   // console.log(t)
 
   // jupiter.rotation.x += 0.05;
@@ -260,11 +288,11 @@ function moveCamera(){
   // camera.position.x = t * -0.0002;
 
 
-for(let i = 0; i < objectMeshs.length; i++){
-  if(objectMeshs[i].revolve){
-    revolve(objectMeshs[i])
+  for (let i = 0; i < objectMeshs.length; i++) {
+    if (objectMeshs[i].revolve) {
+      revolve(objectMeshs[i])
+    }
   }
-}
 
 
 
@@ -286,7 +314,7 @@ function onWindowResize() {
 window.addEventListener('resize', onWindowResize, false);
 
 
-function animate(){
+function animate() {
   requestAnimationFrame(animate);
 
   // torus.rotation.x += 0.01;
